@@ -338,10 +338,10 @@ function renderDash() {
   const rec = orders.slice(0,6);
   document.getElementById('recentTbl').innerHTML = !rec.length
     ? '<div class="empty-s"><div class="ei">📭</div><p>No orders yet</p></div>'
-    : `<table><thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Payment</th><th>Status</th></tr></thead>
+    : `<table><thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Method</th><th>Status</th></tr></thead>
       <tbody>${rec.map(o=>`<tr style="cursor:pointer" onclick="openOD('${o.id}')">
         <td><strong>#${o.id}</strong></td><td>${o.customer.name}</td><td>₹${o.total}</td>
-        <td><span class="rzp-id">${(o.razorpay?.paymentId||o.paymentId||'—').slice(0,16)}</span></td>
+        <td><span style="font-size:0.8rem;">${getPayIcon(o.paymentMethod)} ${o.paymentMethod||'—'}</span></td>
         <td><span class="badge b-${o.status}">${o.status}</span></td>
       </tr>`).join('')}</tbody></table>`;
 
@@ -373,14 +373,15 @@ function renderOrdersTbl() {
   document.getElementById('ocLabel').textContent = fil.length + ' orders';
   document.getElementById('ordersTbl').innerHTML = !fil.length
     ? '<div class="empty-s"><div class="ei">📭</div><p>No orders found</p></div>'
-    : `<table><thead><tr><th>Order ID</th><th>Customer</th><th>Phone</th><th>Items</th><th>Total</th><th>Razorpay ID</th><th>Status</th><th>Date</th><th></th></tr></thead>
+    : `<table><thead><tr><th>Order ID</th><th>Customer</th><th>Phone</th><th>Items</th><th>Total</th><th>Payment Method</th><th>Razorpay ID</th><th>Status</th><th>Date</th><th></th></tr></thead>
       <tbody>${fil.map(o=>`<tr>
         <td><strong>#${o.id}</strong></td>
         <td>${o.customer.name}</td>
         <td>${o.customer.phone}</td>
         <td>${o.items.length} item(s)</td>
         <td>₹${o.total}</td>
-        <td><span class="rzp-id">${(o.razorpay?.paymentId||'—').slice(0,20)}</span></td>
+        <td><span style="font-size:0.8rem;">${getPayIcon(o.paymentMethod)} ${o.paymentMethod}${o.paymentDetails?' ('+o.paymentDetails+')':''}</span></td>
+        <td><span class="rzp-id">${(o.razorpay?.paymentId||'—').slice(0,18)}</span></td>
         <td><span class="badge b-${o.status}">${o.status}</span></td>
         <td style="font-size:0.78rem;color:var(--muted)">${o.timestamp?new Date(o.timestamp).toLocaleDateString('en-IN'):'-'}</td>
         <td><button onclick="openOD('${o.id}')" style="background:var(--gold-l);color:white;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.78rem;">View</button></td>
@@ -420,7 +421,8 @@ function openOD(id) {
         <div class="od-grid">
           <div class="od-f"><div class="lb">Payment ID</div><div class="vl"><span class="rzp-id">${o.razorpay?.paymentId||'—'}</span></div></div>
           <div class="od-f"><div class="lb">Order ID</div><div class="vl"><span class="rzp-id">${o.razorpay?.orderId||'—'}</span></div></div>
-          <div class="od-f"><div class="lb">Method</div><div class="vl">⚡ ${o.paymentMethod||'Razorpay'}</div></div>
+          <div class="od-f"><div class="lb">Method</div><div class="vl">${getPayIcon(o.paymentMethod)} ${o.paymentMethod||'Razorpay'}</div></div>
+          <div class="od-f"><div class="lb">Payment Detail</div><div class="vl">${o.paymentDetails||'—'}</div></div>
           <div class="od-f"><div class="lb">Signature</div><div class="vl" style="font-size:0.75rem;word-break:break-all;">${o.razorpay?.signature?.slice(0,30)||'—'}...</div></div>
         </div>
       </div>
@@ -512,6 +514,17 @@ function renderAnalytics() {
     ? '<div class="empty-s"><div class="ei">📊</div><p>No sales data yet</p></div>'
     : `<table><thead><tr><th>Product</th><th>Units Sold</th><th>Revenue</th></tr></thead>
       <tbody>${sorted.map(p=>`<tr><td>${p.emoji} ${p.name}</td><td>${p.units}</td><td>₹${p.revenue.toLocaleString()}</td></tr>`).join('')}</tbody></table>`;
+}
+
+function getPayIcon(method) {
+  const m = (method||'').toLowerCase();
+  if (m.includes('google')) return '🔵';
+  if (m.includes('phonepe')) return '🟣';
+  if (m.includes('paytm')) return '🔷';
+  if (m.includes('bhim') || m.includes('upi')) return '📱';
+  if (m.includes('card')) return '💳';
+  if (m.includes('razorpay')) return '⚡';
+  return '💰';
 }
 
 prevCount = JSON.parse(localStorage.getItem('gh_orders')||'[]').length;

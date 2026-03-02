@@ -158,6 +158,48 @@
   .modal-back { background: none; border: none; color: var(--gold); cursor: pointer; font-size: 0.9rem; font-family: 'DM Sans', sans-serif; margin-bottom: 20px; display: flex; align-items: center; gap: 4px; }
   .secure-note { text-align: center; font-size: 0.75rem; color: #9B7A4A; margin-top: 12px; }
 
+  /* PAYMENT TABS */
+  .pay-tabs { display: flex; background: #F5EDD8; border-radius: 14px; padding: 4px; margin-bottom: 22px; gap: 4px; }
+  .pay-tab { flex: 1; padding: 10px 6px; text-align: center; border-radius: 11px; cursor: pointer; font-size: 0.82rem; font-weight: 500; color: #9B7A4A; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 3px; border: none; background: transparent; font-family: 'DM Sans', sans-serif; }
+  .pay-tab .pt-icon { font-size: 1.25rem; }
+  .pay-tab.active { background: white; color: var(--amber); box-shadow: 0 2px 10px rgba(0,0,0,0.1); font-weight: 600; }
+  .pay-panel { display: none; }
+  .pay-panel.active { display: block; }
+
+  /* UPI PANEL */
+  .upi-apps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+  .upi-app { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 8px; background: white; border: 1.5px solid #E8D5A3; border-radius: 12px; cursor: pointer; transition: all 0.2s; font-size: 0.72rem; font-weight: 500; color: var(--text); }
+  .upi-app:hover, .upi-app.selected { border-color: var(--gold); background: var(--gold-pale); }
+  .upi-app .app-icon { font-size: 1.8rem; }
+  .upi-id-input { position: relative; }
+  .upi-id-input input { width: 100%; padding: 12px 50px 12px 15px; border: 1.5px solid #E0CDA8; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.93rem; color: var(--text); outline: none; transition: border-color 0.2s; background: #FFFBF2; }
+  .upi-id-input input:focus { border-color: var(--gold); background: white; }
+  .upi-verify-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: var(--gold); color: white; border: none; padding: 6px 12px; border-radius: 7px; cursor: pointer; font-size: 0.78rem; font-family: 'DM Sans', sans-serif; font-weight: 500; }
+  .upi-verified { display: none; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--green, #0F9D58); font-weight: 500; margin-top: 6px; }
+  .upi-verified.show { display: flex; }
+  .upi-or { display: flex; align-items: center; gap: 10px; color: #C8A96E; font-size: 0.8rem; margin: 14px 0; }
+  .upi-or::before, .upi-or::after { content:''; flex:1; height:1px; background:#E8D5A3; }
+
+  /* CARD PANEL */
+  .card-input-wrap { position: relative; }
+  .card-input-wrap .card-type-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 1.4rem; }
+  .card-number-input { letter-spacing: 2px; font-size: 1rem !important; }
+  .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .card-logos { display: flex; gap: 8px; margin-bottom: 16px; }
+  .card-logo { background: white; border: 1px solid #E8D5A3; border-radius: 8px; padding: 6px 10px; font-size: 0.75rem; font-weight: 700; color: #555; display: flex; align-items: center; gap: 4px; }
+
+  /* PROCEED BTN */
+  .proceed-pay-btn { width: 100%; background: linear-gradient(135deg, var(--gold), var(--amber)); color: white; border: none; padding: 16px; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .proceed-pay-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(180,85,12,0.35); }
+  .proceed-pay-btn:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
+
+  /* PROCESSING OVERLAY */
+  .processing { text-align: center; padding: 40px 20px; }
+  .spinner { width: 48px; height: 48px; border: 4px solid #F0E0BA; border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 20px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .processing h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 8px; }
+  .processing p { font-size: 0.88rem; color: #9B7A4A; }
+
   /* SUCCESS */
   .success-screen { text-align: center; padding: 20px 0; }
   .success-icon { font-size: 5rem; margin-bottom: 20px; animation: pop .5s ease; }
@@ -553,19 +595,108 @@ function renderCStep() {
     mc.innerHTML = `
       <div class="step-bar"><div class="s on"></div><div class="s on"></div></div>
       <button class="modal-back" onclick="cStep=1;renderCStep()">← Back</button>
-      <h2>💳 Payment</h2>
+      <h2>💳 Choose Payment</h2>
       <div class="order-summary-mini">
         <h4>Order Summary</h4>
         ${items}
         <div class="sl-total"><span>Total</span><span>₹${total}</span></div>
       </div>
-      <div style="background:#EEF4FF;border:1.5px solid #C5D9FF;border-radius:12px;padding:14px 16px;margin-bottom:18px;font-size:0.84rem;color:#2A5CC0;line-height:1.6;">
-        🔒 Secure payment via <strong>Razorpay</strong> — UPI, Cards, Net Banking, Wallets accepted.
+
+      <!-- PAYMENT METHOD TABS -->
+      <div class="pay-tabs">
+        <button class="pay-tab active" id="ptab-upi" onclick="switchPayTab('upi')">
+          <span class="pt-icon">📱</span>UPI
+        </button>
+        <button class="pay-tab" id="ptab-card" onclick="switchPayTab('card')">
+          <span class="pt-icon">💳</span>Card
+        </button>
+        <button class="pay-tab" id="ptab-rzp" onclick="switchPayTab('rzp')">
+          <span class="pt-icon">⚡</span>All Methods
+        </button>
       </div>
-      <button class="pay-rzp" onclick="startRazorpay()">
-        ⚡ Pay ₹${total} via Razorpay
-      </button>
-      <div class="secure-note">🔐 256-bit SSL · Razorpay PCI-DSS Certified</div>`;
+
+      <!-- UPI PANEL -->
+      <div class="pay-panel active" id="panel-upi">
+        <p style="font-size:0.83rem;color:#9B7A4A;margin-bottom:14px;">Choose your UPI app or enter UPI ID manually</p>
+        <div class="upi-apps">
+          <div class="upi-app" id="upi-gpay" onclick="selectUpiApp('gpay')"><div class="app-icon">🔵</div><span>Google Pay</span></div>
+          <div class="upi-app" id="upi-phonepe" onclick="selectUpiApp('phonepe')"><div class="app-icon">🟣</div><span>PhonePe</span></div>
+          <div class="upi-app" id="upi-paytm" onclick="selectUpiApp('paytm')"><div class="app-icon">🔷</div><span>Paytm</span></div>
+          <div class="upi-app" id="upi-bhim" onclick="selectUpiApp('bhim')"><div class="app-icon">🇮🇳</div><span>BHIM</span></div>
+        </div>
+        <div class="upi-or">or enter UPI ID</div>
+        <div class="fg" style="margin-bottom:6px;">
+          <label>UPI ID</label>
+          <div class="upi-id-input">
+            <input id="upiIdInput" placeholder="yourname@upi or 9876543210@paytm" oninput="onUpiInput()">
+            <button class="upi-verify-btn" onclick="verifyUpiId()">Verify</button>
+          </div>
+        </div>
+        <div class="upi-verified" id="upiVerified">✅ UPI ID verified successfully</div>
+        <button class="proceed-pay-btn" id="upiPayBtn" onclick="proceedUpi()" style="margin-top:16px;" disabled>
+          🔒 Pay ₹${total} via UPI
+        </button>
+        <div class="secure-note" style="margin-top:10px;">🔐 Secured by RBI-approved UPI network</div>
+      </div>
+
+      <!-- CARD PANEL -->
+      <div class="pay-panel" id="panel-card">
+        <div class="card-logos">
+          <div class="card-logo">💙 VISA</div>
+          <div class="card-logo">🟠 Master</div>
+          <div class="card-logo">🟡 RuPay</div>
+          <div class="card-logo">💚 Maestro</div>
+        </div>
+        <div class="fg">
+          <label>Card Number *</label>
+          <div class="card-input-wrap">
+            <input id="cardNum" class="card-number-input" placeholder="1234  5678  9012  3456" maxlength="19" oninput="formatCardNum(this)" style="width:100%;padding:11px 44px 11px 15px;border:1.5px solid #E0CDA8;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.93rem;color:var(--text);outline:none;background:#FFFBF2;" autocomplete="cc-number">
+            <span class="card-type-icon" id="cardTypeIcon">💳</span>
+          </div>
+        </div>
+        <div class="fg">
+          <label>Cardholder Name *</label>
+          <input id="cardName" placeholder="RAJESH KUMAR" style="width:100%;padding:11px 15px;border:1.5px solid #E0CDA8;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.93rem;color:var(--text);outline:none;background:#FFFBF2;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()" autocomplete="cc-name">
+        </div>
+        <div class="card-row">
+          <div class="fg">
+            <label>Expiry (MM/YY) *</label>
+            <input id="cardExp" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)" style="width:100%;padding:11px 15px;border:1.5px solid #E0CDA8;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.93rem;color:var(--text);outline:none;background:#FFFBF2;" autocomplete="cc-exp">
+          </div>
+          <div class="fg">
+            <label>CVV *</label>
+            <div class="pw-wrap">
+              <input id="cardCvv" type="password" placeholder="•••" maxlength="4" oninput="this.value=this.value.replace(/\D/g,'')" style="width:100%;padding:11px 40px 11px 15px;border:1.5px solid #E0CDA8;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.93rem;color:var(--text);outline:none;background:#FFFBF2;" autocomplete="cc-csc">
+              <button class="pw-toggle" type="button" onclick="tpw('cardCvv',this)">👁</button>
+            </div>
+          </div>
+        </div>
+        <div style="background:#FFFBF2;border:1px solid #E8D5A3;border-radius:10px;padding:10px 14px;font-size:0.78rem;color:#9B7A4A;margin-bottom:14px;display:flex;gap:8px;align-items:center;">
+          🔒 Your card details are encrypted and never stored on our servers.
+        </div>
+        <button class="proceed-pay-btn" onclick="proceedCard()">
+          🔒 Pay ₹${total} Securely
+        </button>
+        <div class="secure-note" style="margin-top:10px;">🛡️ 256-bit SSL · PCI-DSS Compliant</div>
+      </div>
+
+      <!-- RAZORPAY ALL-IN-ONE PANEL -->
+      <div class="pay-panel" id="panel-rzp">
+        <div style="background:#EEF4FF;border:1.5px solid #C5D9FF;border-radius:12px;padding:16px;margin-bottom:18px;font-size:0.85rem;color:#2A5CC0;line-height:1.7;">
+          ⚡ <strong>Razorpay Checkout</strong> — Pay using UPI, Credit/Debit Card, Net Banking, Wallets & more in one place.
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
+          <div style="background:#F8FFFE;border:1px solid #C5E5D9;border-radius:10px;padding:12px;text-align:center;font-size:0.78rem;color:#2A7A5A;">📱 UPI</div>
+          <div style="background:#F5F0FF;border:1px solid #D4C5E5;border-radius:10px;padding:12px;text-align:center;font-size:0.78rem;color:#5A3A8A;">💳 Cards</div>
+          <div style="background:#FFF8EE;border:1px solid #E5D5A5;border-radius:10px;padding:12px;text-align:center;font-size:0.78rem;color:#8A5A1A;">🏦 Net Banking</div>
+          <div style="background:#F5FEFF;border:1px solid #A5D5E5;border-radius:10px;padding:12px;text-align:center;font-size:0.78rem;color:#1A6A8A;">👛 Wallets</div>
+        </div>
+        <button class="pay-rzp" onclick="startRazorpay()">
+          ⚡ Pay ₹${total} via Razorpay
+        </button>
+        <div class="secure-note" style="margin-top:10px;">🔐 256-bit SSL · Razorpay PCI-DSS Certified</div>
+      </div>
+    `;
 
   } else if (cStep === 3) {
     mc.innerHTML = `<div class="success-screen">
@@ -590,6 +721,126 @@ function step1Next() {
   if (!/^\d{10}$/.test(p)) { showToast('⚠️ Enter valid 10-digit phone'); return; }
   dInfo = {...dInfo, name:n, phone:p, email:document.getElementById('cEmail').value.trim(), address:a, city:c, pin};
   cStep = 2; renderCStep();
+}
+
+// ============ PAYMENT TABS ============
+function switchPayTab(tab) {
+  ['upi','card','rzp'].forEach(t => {
+    document.getElementById('ptab-'+t)?.classList.toggle('active', t===tab);
+    document.getElementById('panel-'+t)?.classList.toggle('active', t===tab);
+  });
+}
+
+// ---- UPI ----
+let selectedUpiApp = null;
+let upiVerifiedFlag = false;
+
+function selectUpiApp(app) {
+  selectedUpiApp = app;
+  ['gpay','phonepe','paytm','bhim'].forEach(a => document.getElementById('upi-'+a)?.classList.toggle('selected', a===app));
+  // Clear manual UPI ID when app selected
+  document.getElementById('upiIdInput').value = '';
+  document.getElementById('upiVerified').classList.remove('show');
+  upiVerifiedFlag = false;
+  document.getElementById('upiPayBtn').disabled = false;
+}
+
+function onUpiInput() {
+  selectedUpiApp = null;
+  ['gpay','phonepe','paytm','bhim'].forEach(a => document.getElementById('upi-'+a)?.classList.remove('selected'));
+  upiVerifiedFlag = false;
+  document.getElementById('upiVerified').classList.remove('show');
+  document.getElementById('upiPayBtn').disabled = true;
+}
+
+function verifyUpiId() {
+  const val = document.getElementById('upiIdInput').value.trim();
+  if (!val || !val.includes('@')) { showToast('⚠️ Enter a valid UPI ID (e.g. name@upi)'); return; }
+  // Simulate async verification
+  showToast('🔄 Verifying UPI ID...');
+  setTimeout(() => {
+    upiVerifiedFlag = true;
+    document.getElementById('upiVerified').classList.add('show');
+    document.getElementById('upiPayBtn').disabled = false;
+    showToast('✅ UPI ID verified!');
+  }, 1200);
+}
+
+function proceedUpi() {
+  const upiId = document.getElementById('upiIdInput')?.value?.trim();
+  const app = selectedUpiApp;
+  if (!app && (!upiId || !upiVerifiedFlag)) {
+    showToast('⚠️ Select a UPI app or verify your UPI ID first');
+    return;
+  }
+  const method = app ? {gpay:'Google Pay',phonepe:'PhonePe',paytm:'Paytm',bhim:'BHIM UPI'}[app] : 'UPI';
+  const id = app ? `${method}_${Date.now()}` : upiId;
+  showProcessing();
+  setTimeout(() => {
+    onPaymentSuccess({
+      razorpay_payment_id: 'pay_UPI_' + Date.now(),
+      razorpay_order_id: 'order_' + Date.now(),
+      razorpay_signature: 'sig_UPI',
+      method, upiId: id
+    });
+  }, 2200);
+}
+
+// ---- CARD ----
+function formatCardNum(input) {
+  let v = input.value.replace(/\D/g,'').slice(0,16);
+  input.value = v.replace(/(.{4})/g,'$1 ').trim();
+  // Detect card type
+  const icon = document.getElementById('cardTypeIcon');
+  if (!icon) return;
+  if (/^4/.test(v)) icon.textContent = '💙';
+  else if (/^5[1-5]/.test(v)) icon.textContent = '🟠';
+  else if (/^6/.test(v)) icon.textContent = '🟡';
+  else icon.textContent = '💳';
+}
+
+function formatExpiry(input) {
+  let v = input.value.replace(/\D/g,'');
+  if (v.length>=3) v = v.slice(0,2)+'/'+v.slice(2,4);
+  input.value = v;
+}
+
+function proceedCard() {
+  const num = (document.getElementById('cardNum')?.value||'').replace(/\s/g,'');
+  const name = (document.getElementById('cardName')?.value||'').trim();
+  const exp = document.getElementById('cardExp')?.value||'';
+  const cvv = (document.getElementById('cardCvv')?.value||'').trim();
+
+  if (num.length < 16) { showToast('⚠️ Enter a valid 16-digit card number'); return; }
+  if (!name) { showToast('⚠️ Enter cardholder name'); return; }
+  if (!/^\d{2}\/\d{2}$/.test(exp)) { showToast('⚠️ Enter expiry as MM/YY'); return; }
+  // Validate expiry not in past
+  const [mm, yy] = exp.split('/').map(Number);
+  const now = new Date();
+  if (mm < 1 || mm > 12 || (yy + 2000) < now.getFullYear() || ((yy + 2000) === now.getFullYear() && mm < now.getMonth()+1)) {
+    showToast('⚠️ Card has expired'); return;
+  }
+  if (cvv.length < 3) { showToast('⚠️ Enter valid CVV'); return; }
+
+  showProcessing();
+  setTimeout(() => {
+    onPaymentSuccess({
+      razorpay_payment_id: 'pay_CARD_' + Date.now(),
+      razorpay_order_id: 'order_' + Date.now(),
+      razorpay_signature: 'sig_CARD',
+      method: 'Card',
+      cardLast4: num.slice(-4)
+    });
+  }, 2200);
+}
+
+function showProcessing() {
+  document.getElementById('checkoutContent').innerHTML = `
+    <div class="processing">
+      <div class="spinner"></div>
+      <h3>Processing Payment...</h3>
+      <p>Please do not close this window.<br>Securely processing your ₹${getTotal()} payment.</p>
+    </div>`;
 }
 
 // ============ RAZORPAY ============
@@ -645,6 +896,7 @@ function startRazorpay() {
 function onPaymentSuccess(rzpResponse) {
   const orderId = 'GH' + Date.now().toString().slice(-8);
   dInfo.orderId = orderId;
+  const method = rzpResponse.method || 'Razorpay';
   const order = {
     id: orderId,
     userId: currentUser.id,
@@ -656,7 +908,8 @@ function onPaymentSuccess(rzpResponse) {
       orderId: rzpResponse.razorpay_order_id || rzpResponse.order_id || '',
       signature: rzpResponse.razorpay_signature || rzpResponse.signature || ''
     },
-    paymentMethod: 'Razorpay',
+    paymentMethod: method,
+    paymentDetails: rzpResponse.upiId || (rzpResponse.cardLast4 ? '****' + rzpResponse.cardLast4 : ''),
     status: 'Confirmed',
     timestamp: new Date().toISOString()
   };
@@ -703,12 +956,22 @@ function renderMyOrders() {
       <div style="font-size:0.85rem;color:#6B4F2A;line-height:1.6;">${o.items.map(i=>`${i.emoji} ${i.name} (${i.weight}) ×${i.qty}`).join(' · ')}</div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-wrap:wrap;gap:8px;">
         <div style="font-weight:700;font-size:0.95rem;">Total: ₹${o.total}</div>
-        <div style="font-size:0.75rem;color:#9B7A4A;">💳 ${o.paymentMethod} · ID: ${(o.razorpay?.paymentId||'').slice(0,22)}</div>
+        <div style="font-size:0.75rem;color:#9B7A4A;">💳 ${o.paymentMethod}${o.paymentDetails?' · '+o.paymentDetails:''} · ${(o.razorpay?.paymentId||'').slice(0,20)}</div>
       </div>
     </div>`).join('');
 }
 
 // ============ UTILS ============
+function getPayIcon(method) {
+  const m = (method||'').toLowerCase();
+  if (m.includes('google')) return '🔵';
+  if (m.includes('phonepe')) return '🟣';
+  if (m.includes('paytm')) return '🔷';
+  if (m.includes('bhim') || m.includes('upi')) return '📱';
+  if (m.includes('card')) return '💳';
+  return '⚡';
+}
+
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
