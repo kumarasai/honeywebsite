@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Golden Hive — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold:#D4820A; --gold-l:#F5A623; --amber:#B5540C;
+    --dark:#0F0A00; --sidebar:#1A1200; --shover:#2C1E00;
+    --bg:#FAF5EC; --card:#fff; --border:#EAD8A8;
+    --text:#2D1A06; --muted:#9B7A4A;
+    --green:#0F9D58; --blue:#4285F4; --red:#DB4437; --yellow:#F4B400;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+  /* LOGIN */
+  .login-screen{width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 40% 50%,#3D2000,#0F0A00 70%);}
+  .login-box{background:rgba(255,255,255,0.04);border:1px solid rgba(212,130,10,0.3);border-radius:24px;padding:44px 40px;width:380px;text-align:center;backdrop-filter:blur(10px);}
+  .login-icon{font-size:3.5rem;margin-bottom:16px;}
+  .login-box h2{font-family:'Playfair Display',serif;color:var(--gold-l);font-size:1.7rem;margin-bottom:6px;}
+  .login-box p{color:#C8A96E;font-size:0.85rem;margin-bottom:32px;}
+  .lf{margin-bottom:16px;text-align:left;}
+  .lf label{display:block;color:#C8A96E;font-size:0.8rem;font-weight:500;margin-bottom:6px;}
+  .lf input{width:100%;background:rgba(255,255,255,0.07);border:1.5px solid rgba(212,130,10,0.3);border-radius:10px;padding:12px 16px;color:white;font-family:'Inter',sans-serif;font-size:0.95rem;outline:none;transition:border-color .2s;}
+  .lf input:focus{border-color:var(--gold);}
+  .lf input::placeholder{color:rgba(200,169,110,0.4);}
+  .login-btn{width:100%;background:var(--gold);color:white;border:none;padding:14px;border-radius:50px;font-family:'Inter',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;margin-top:8px;transition:background .2s;}
+  .login-btn:hover{background:var(--amber);}
+  .login-err{color:#ff6b6b;font-size:0.82rem;margin-top:10px;display:none;}
+
+  /* LAYOUT */
+  .admin{display:none;width:100%;min-height:100vh;}
+  .admin.show{display:flex;}
+  .sidebar{width:240px;background:var(--sidebar);flex-shrink:0;display:flex;flex-direction:column;min-height:100vh;position:sticky;top:0;}
+  .sb-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(212,130,10,0.2);}
+  .sb-brand{font-family:'Playfair Display',serif;color:var(--gold-l);font-size:1.25rem;display:flex;align-items:center;gap:8px;}
+  .sb-sub{font-size:0.7rem;color:#8B6A30;text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+  .sb-nav{flex:1;padding:16px 12px;}
+  .ni{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;cursor:pointer;color:#C8A96E;font-size:0.88rem;font-weight:500;margin-bottom:4px;transition:all .15s;}
+  .ni:hover{background:var(--shover);color:var(--gold-l);}
+  .ni.active{background:rgba(212,130,10,0.15);color:var(--gold-l);border-left:3px solid var(--gold);}
+  .ni-icon{font-size:1.1rem;width:20px;text-align:center;}
+  .ni-badge{margin-left:auto;background:var(--gold);color:white;border-radius:50px;padding:2px 8px;font-size:0.7rem;font-weight:700;}
+  .sb-foot{padding:16px;border-top:1px solid rgba(212,130,10,0.15);}
+  .logout{display:flex;align-items:center;gap:10px;color:#8B6A30;font-size:0.85rem;cursor:pointer;padding:10px 14px;border-radius:8px;transition:all .15s;}
+  .logout:hover{background:var(--shover);color:#ff9999;}
+  .main{flex:1;min-height:100vh;overflow:auto;}
+  .topbar{background:white;border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+  .topbar-title{font-size:1.05rem;font-weight:600;}
+  .topbar-r{display:flex;align-items:center;gap:16px;}
+  .bell{font-size:1.2rem;cursor:pointer;position:relative;}
+  .bell-dot{position:absolute;top:-3px;right:-3px;width:10px;height:10px;background:var(--red);border-radius:50%;border:2px solid white;display:none;}
+  .bell-dot.on{display:block;}
+  .a-info{display:flex;align-items:center;gap:8px;}
+  .a-av{width:32px;height:32px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.85rem;}
+
+  /* PAGES */
+  .page{display:none;padding:28px;}
+  .page.active{display:block;}
+
+  /* STATS */
+  .stats-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:28px;}
+  .sc{background:white;border-radius:16px;padding:22px;border:1px solid var(--border);display:flex;gap:16px;align-items:center;}
+  .sci{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+  .sc-info .sv{font-size:1.6rem;font-weight:700;color:var(--text);line-height:1;margin-bottom:4px;}
+  .sc-info .sl{font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+
+  /* CARD */
+  .card{background:white;border-radius:16px;border:1px solid var(--border);overflow:hidden;margin-bottom:20px;}
+  .card-hdr{padding:18px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+  .card-title{font-weight:600;font-size:0.95rem;}
+  .card-act{font-size:0.8rem;color:var(--gold);cursor:pointer;font-weight:500;}
+
+  /* TABLE */
+  table{width:100%;border-collapse:collapse;}
+  th{background:#FAF5EC;font-size:0.73rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;padding:12px 18px;text-align:left;}
+  td{padding:13px 18px;font-size:0.87rem;border-bottom:1px solid #FAF5EC;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:#FFFBF2;}
+
+  /* BADGES */
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;}
+  .b-Confirmed{background:#E6F9EE;color:var(--green);}
+  .b-Processing{background:#E3F2FD;color:var(--blue);}
+  .b-Delivered{background:#F0F0F0;color:#5F6368;}
+  .b-Cancelled{background:#FDECEA;color:var(--red);}
+
+  /* ORDER DETAIL */
+  .od-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+  .od-overlay.open{display:flex;}
+  .od-box{background:white;border-radius:20px;width:620px;max-width:100%;max-height:90vh;overflow-y:auto;}
+  .od-top{padding:24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+  .od-body{padding:24px;}
+  .od-sec{margin-bottom:22px;}
+  .od-sec h4{font-size:0.75rem;text-transform:uppercase;color:var(--muted);letter-spacing:1px;font-weight:600;margin-bottom:12px;}
+  .od-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .od-f .lb{font-size:0.75rem;color:var(--muted);margin-bottom:2px;}
+  .od-f .vl{font-size:0.92rem;font-weight:500;color:var(--text);}
+  .od-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F5EDDA;font-size:0.88rem;}
+  .od-total{display:flex;justify-content:space-between;font-weight:700;font-size:1rem;margin-top:12px;color:var(--amber);}
+  .st-sel{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-family:'Inter',sans-serif;font-size:0.88rem;color:var(--text);outline:none;cursor:pointer;}
+  .st-btn{background:var(--gold);color:white;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;font-size:0.85rem;font-weight:500;}
+  .od-close{background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted);}
+
+  /* NOTIFICATION */
+  .notif{position:fixed;top:20px;right:20px;background:var(--sidebar);border:1px solid rgba(212,130,10,0.4);border-radius:14px;padding:16px 20px;max-width:300px;z-index:999;transform:translateX(360px);transition:transform .4s cubic-bezier(.4,0,.2,1);color:white;}
+  .notif.show{transform:translateX(0);}
+  .notif-t{font-weight:600;color:var(--gold-l);margin-bottom:4px;font-size:0.88rem;}
+  .notif-b{font-size:0.8rem;color:#C8A96E;}
+
+  /* TOOLBAR */
+  .toolbar{padding:14px 20px;display:flex;gap:12px;align-items:center;border-bottom:1px solid var(--border);}
+  .search-i{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:8px 14px;font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;}
+  .filter-s{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-family:'Inter',sans-serif;font-size:0.85rem;outline:none;cursor:pointer;}
+  .refresh-btn{background:var(--gold-l);color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-family:'Inter',sans-serif;font-weight:500;transition:background .2s;}
+  .refresh-btn:hover{background:var(--gold);}
+
+  /* CHART BARS */
+  .bar-chart{display:flex;align-items:flex-end;gap:8px;height:120px;padding:0 0 8px;margin-top:12px;}
+  .bw{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;}
+  .bar{width:100%;background:linear-gradient(to top,var(--gold),var(--gold-l));border-radius:6px 6px 0 0;min-height:3px;transition:height .8s ease;}
+  .bl{font-size:0.67rem;color:var(--muted);text-align:center;}
+  .bv{font-size:0.67rem;color:var(--amber);font-weight:600;}
+
+  .empty-s{text-align:center;padding:60px 20px;color:var(--muted);}
+  .empty-s .ei{font-size:3.5rem;margin-bottom:16px;}
+
+  .rzp-id{font-family:'Courier New',monospace;background:#F0F4FF;padding:4px 8px;border-radius:6px;font-size:0.8rem;color:#2A5CC0;}
+
+  @media(max-width:768px){
+    .sidebar{width:58px;}
+    .sb-brand span:last-child,.sb-sub,.ni span:not(.ni-icon),.ni-badge,.sb-foot span:last-child{display:none;}
+    .page{padding:14px;}
+    .stats-g{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-icon">🍯</div>
+    <h2>Admin Portal</h2>
+    <p>Golden Hive Management System</p>
+    <div class="lf"><label>Username</label><input id="lu" placeholder="admin" autocomplete="off"></div>
+    <div class="lf"><label>Password</label><input id="lp" type="password" placeholder="••••••••"></div>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="lerr">Invalid credentials</div>
+    <div style="margin-top:14px;font-size:0.74rem;color:#6B5030;">Hint: admin / honey123</div>
+  </div>
+</div>
+
+<!-- ADMIN LAYOUT -->
+<div class="admin" id="adminLayout">
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-brand"><span>🍯</span><span>Golden Hive</span></div>
+      <div class="sb-sub">Admin Panel</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="ni active" onclick="showPage('dashboard',this)"><span class="ni-icon">📊</span><span>Dashboard</span></div>
+      <div class="ni" onclick="showPage('orders',this)"><span class="ni-icon">📦</span><span>Orders</span><span class="ni-badge" id="newBadge">0</span></div>
+      <div class="ni" onclick="showPage('products',this)"><span class="ni-icon">🍯</span><span>Products</span></div>
+      <div class="ni" onclick="showPage('customers',this)"><span class="ni-icon">👥</span><span>Customers</span></div>
+      <div class="ni" onclick="showPage('analytics',this)"><span class="ni-icon">📈</span><span>Analytics</span></div>
+    </nav>
+    <div class="sb-foot">
+      <div class="logout" onclick="logout()"><span>🚪</span><span>Logout</span></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="ptitle">Dashboard</div>
+      <div class="topbar-r">
+        <div class="bell" onclick="clearNotif()">🔔<div class="bell-dot" id="bellDot"></div></div>
+        <div class="a-info"><div class="a-av">A</div><span style="font-size:0.85rem;font-weight:500;">Admin</span></div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-g" id="statsGrid"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Recent Orders</span><span class="card-act" onclick="showPage('orders',null)">View All →</span></div>
+          <div id="recentTbl"></div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">Revenue (Last 7 Days)</span></div>
+          <div style="padding:16px 20px;"><div class="bar-chart" id="revChart"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="page" id="page-orders">
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">All Orders</span><span id="ocLabel" style="font-size:0.8rem;color:var(--muted);"></span></div>
+        <div class="toolbar">
+          <input class="search-i" id="oSearch" placeholder="🔍 Search by ID, name, phone, payment ID..." oninput="renderOrdersTbl()">
+          <select class="filter-s" id="oFilter" onchange="renderOrdersTbl()">
+            <option value="">All Status</option>
+            <option>Confirmed</option><option>Processing</option><option>Delivered</option><option>Cancelled</option>
+          </select>
+          <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+        </div>
+        <div id="ordersTbl"></div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="page" id="page-products">
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Product Catalogue</span></div>
+        <div id="prodTbl"></div>
+      </div>
+    </div>
+
+    <!-- CUSTOMERS -->
+    <div class="page" id="page-customers">
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Registered Customers</span></div>
+        <div id="custTbl"></div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="page" id="page-analytics">
+      <div class="stats-g" id="aStats"></div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Top Products by Revenue</span></div>
+        <div id="topProdTbl"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL -->
+<div class="od-overlay" id="odOverlay">
+  <div class="od-box" id="odBox"></div>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="notif" id="notif">
+  <div class="notif-t" id="notifT"></div>
+  <div class="notif-b" id="notifB"></div>
+</div>
+
+<script>
+const CREDS = {u:'admin', p:'honey123'};
+const PRODS = [
+  {id:1,name:"Wildflower Honey",emoji:"🌸",weights:[{w:"250g",p:199},{w:"500g",p:349},{w:"1kg",p:649}]},
+  {id:2,name:"Kashmiri Acacia",emoji:"🏔️",weights:[{w:"250g",p:299},{w:"500g",p:549},{w:"1kg",p:999}]},
+  {id:3,name:"Forest Honey",emoji:"🌲",weights:[{w:"250g",p:249},{w:"500g",p:449},{w:"1kg",p:849}]},
+  {id:4,name:"Tulsi Honey",emoji:"🌿",weights:[{w:"250g",p:229},{w:"500g",p:399},{w:"1kg",p:749}]},
+  {id:5,name:"Litchi Honey",emoji:"🍈",weights:[{w:"250g",p:219},{w:"500g",p:389},{w:"1kg",p:729}]},
+  {id:6,name:"Mustard Honey",emoji:"🌼",weights:[{w:"250g",p:189},{w:"500g",p:329},{w:"1kg",p:609}]},
+];
+
+let orders = [];
+let prevCount = 0;
+
+function doLogin() {
+  if (document.getElementById('lu').value===CREDS.u && document.getElementById('lp').value===CREDS.p) {
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('adminLayout').classList.add('show');
+    loadAll(); startPolling();
+  } else {
+    document.getElementById('lerr').style.display='block';
+    setTimeout(()=>document.getElementById('lerr').style.display='none',3000);
+  }
+}
+document.getElementById('lu').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('lp').focus(); });
+document.getElementById('lp').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+
+function logout() {
+  document.getElementById('loginScreen').style.display='';
+  document.getElementById('adminLayout').classList.remove('show');
+  document.getElementById('lu').value=''; document.getElementById('lp').value='';
+}
+
+function loadAll() {
+  orders = JSON.parse(localStorage.getItem('gh_orders')||'[]');
+  renderDash(); renderOrdersTbl(); renderProdTbl(); renderCustTbl(); renderAnalytics();
+  document.getElementById('newBadge').textContent = orders.filter(o=>o.status==='Confirmed').length;
+}
+
+function startPolling() {
+  setInterval(()=>{
+    const cur = JSON.parse(localStorage.getItem('gh_orders')||'[]');
+    if (cur.length > prevCount && prevCount > 0) {
+      const o = cur[0];
+      showNotif('🆕 New Order!', `#${o.id} — ₹${o.total} from ${o.customer.name}`);
+      document.getElementById('bellDot').classList.add('on');
+    }
+    if (cur.length !== orders.length) {
+      orders = cur; loadAll();
+    }
+    prevCount = cur.length;
+  }, 2000);
+}
+
+function showNotif(t, b) {
+  document.getElementById('notifT').textContent = t;
+  document.getElementById('notifB').textContent = b;
+  const n = document.getElementById('notif');
+  n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'), 5000);
+}
+function clearNotif() { document.getElementById('bellDot').classList.remove('on'); }
+
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if (el) el.classList.add('active');
+  const t = {dashboard:'Dashboard',orders:'Orders',products:'Products',customers:'Customers',analytics:'Analytics'};
+  document.getElementById('ptitle').textContent = t[name]||name;
+}
+
+// DASHBOARD
+function renderDash() {
+  const total = orders.length;
+  const rev = orders.filter(o=>o.status!=='Cancelled').reduce((a,c)=>a+c.total,0);
+  const newOrd = orders.filter(o=>o.status==='Confirmed').length;
+  const del = orders.filter(o=>o.status==='Delivered').length;
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="sc"><div class="sci" style="background:#FEF3D7">📦</div><div class="sc-info"><div class="sv">${total}</div><div class="sl">Total Orders</div></div></div>
+    <div class="sc"><div class="sci" style="background:#E6F9EE">₹</div><div class="sc-info"><div class="sv">₹${rev.toLocaleString()}</div><div class="sl">Revenue</div></div></div>
+    <div class="sc"><div class="sci" style="background:#FFF8E1">🆕</div><div class="sc-info"><div class="sv">${newOrd}</div><div class="sl">New Orders</div></div></div>
+    <div class="sc"><div class="sci" style="background:#E3F2FD">✅</div><div class="sc-info"><div class="sv">${del}</div><div class="sl">Delivered</div></div></div>`;
+
+  const rec = orders.slice(0,6);
+  document.getElementById('recentTbl').innerHTML = !rec.length
+    ? '<div class="empty-s"><div class="ei">📭</div><p>No orders yet</p></div>'
+    : `<table><thead><tr><th>Order</th><th>Customer</th><th>Amount</th><th>Payment</th><th>Status</th></tr></thead>
+      <tbody>${rec.map(o=>`<tr style="cursor:pointer" onclick="openOD('${o.id}')">
+        <td><strong>#${o.id}</strong></td><td>${o.customer.name}</td><td>₹${o.total}</td>
+        <td><span class="rzp-id">${(o.razorpay?.paymentId||o.paymentId||'—').slice(0,16)}</span></td>
+        <td><span class="badge b-${o.status}">${o.status}</span></td>
+      </tr>`).join('')}</tbody></table>`;
+
+  // Revenue bar chart — last 7 days
+  const days = [];
+  for (let i=6;i>=0;i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const key = d.toISOString().slice(0,10);
+    const r = orders.filter(o=>o.timestamp?.slice(0,10)===key&&o.status!=='Cancelled').reduce((a,c)=>a+c.total,0);
+    days.push({l:['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()], r});
+  }
+  const mx = Math.max(...days.map(d=>d.r),1);
+  document.getElementById('revChart').innerHTML = days.map(d=>`
+    <div class="bw">
+      <div class="bv">${d.r>0?'₹'+d.r:''}</div>
+      <div class="bar" style="height:${Math.max((d.r/mx)*100,d.r>0?6:2)}%"></div>
+      <div class="bl">${d.l}</div>
+    </div>`).join('');
+}
+
+// ORDERS TABLE
+function renderOrdersTbl() {
+  const s = (document.getElementById('oSearch')?.value||'').toLowerCase();
+  const f = document.getElementById('oFilter')?.value||'';
+  const fil = orders.filter(o=>{
+    const ms = !s || o.id.toLowerCase().includes(s) || o.customer.name.toLowerCase().includes(s) || o.customer.phone.includes(s) || (o.razorpay?.paymentId||'').toLowerCase().includes(s);
+    return ms && (!f || o.status===f);
+  });
+  document.getElementById('ocLabel').textContent = fil.length + ' orders';
+  document.getElementById('ordersTbl').innerHTML = !fil.length
+    ? '<div class="empty-s"><div class="ei">📭</div><p>No orders found</p></div>'
+    : `<table><thead><tr><th>Order ID</th><th>Customer</th><th>Phone</th><th>Items</th><th>Total</th><th>Razorpay ID</th><th>Status</th><th>Date</th><th></th></tr></thead>
+      <tbody>${fil.map(o=>`<tr>
+        <td><strong>#${o.id}</strong></td>
+        <td>${o.customer.name}</td>
+        <td>${o.customer.phone}</td>
+        <td>${o.items.length} item(s)</td>
+        <td>₹${o.total}</td>
+        <td><span class="rzp-id">${(o.razorpay?.paymentId||'—').slice(0,20)}</span></td>
+        <td><span class="badge b-${o.status}">${o.status}</span></td>
+        <td style="font-size:0.78rem;color:var(--muted)">${o.timestamp?new Date(o.timestamp).toLocaleDateString('en-IN'):'-'}</td>
+        <td><button onclick="openOD('${o.id}')" style="background:var(--gold-l);color:white;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.78rem;">View</button></td>
+      </tr>`).join('')}</tbody></table>`;
+}
+
+// ORDER DETAIL
+function openOD(id) {
+  const o = orders.find(x=>x.id===id);
+  if (!o) return;
+  document.getElementById('odBox').innerHTML = `
+    <div class="od-top">
+      <div>
+        <div style="font-weight:700;font-size:1.1rem;">Order #${o.id}</div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">${o.timestamp?new Date(o.timestamp).toLocaleString('en-IN'):''}</div>
+      </div>
+      <button class="od-close" onclick="closeOD()">✕</button>
+    </div>
+    <div class="od-body">
+      <div class="od-sec">
+        <h4>Customer Info</h4>
+        <div class="od-grid">
+          <div class="od-f"><div class="lb">Name</div><div class="vl">${o.customer.name}</div></div>
+          <div class="od-f"><div class="lb">Phone</div><div class="vl">${o.customer.phone}</div></div>
+          <div class="od-f"><div class="lb">Email</div><div class="vl">${o.customer.email||'—'}</div></div>
+          <div class="od-f"><div class="lb">City & PIN</div><div class="vl">${o.customer.city} — ${o.customer.pin}</div></div>
+          <div class="od-f" style="grid-column:span 2"><div class="lb">Delivery Address</div><div class="vl">${o.customer.address}, ${o.customer.city} — ${o.customer.pin}</div></div>
+        </div>
+      </div>
+      <div class="od-sec">
+        <h4>Items Ordered</h4>
+        ${o.items.map(i=>`<div class="od-item"><span>${i.emoji} ${i.name} (${i.weight}) × ${i.qty}</span><span style="font-weight:600">₹${i.price*i.qty}</span></div>`).join('')}
+        <div class="od-total"><span>Total</span><span>₹${o.total}</span></div>
+      </div>
+      <div class="od-sec">
+        <h4>Razorpay Payment</h4>
+        <div class="od-grid">
+          <div class="od-f"><div class="lb">Payment ID</div><div class="vl"><span class="rzp-id">${o.razorpay?.paymentId||'—'}</span></div></div>
+          <div class="od-f"><div class="lb">Order ID</div><div class="vl"><span class="rzp-id">${o.razorpay?.orderId||'—'}</span></div></div>
+          <div class="od-f"><div class="lb">Method</div><div class="vl">⚡ ${o.paymentMethod||'Razorpay'}</div></div>
+          <div class="od-f"><div class="lb">Signature</div><div class="vl" style="font-size:0.75rem;word-break:break-all;">${o.razorpay?.signature?.slice(0,30)||'—'}...</div></div>
+        </div>
+      </div>
+      <div class="od-sec">
+        <h4>Update Order Status</h4>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <select class="st-sel" id="stSel">
+            ${['Confirmed','Processing','Delivered','Cancelled'].map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+          <button class="st-btn" onclick="updateStatus('${o.id}')">Update Status</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('odOverlay').classList.add('open');
+}
+function closeOD() { document.getElementById('odOverlay').classList.remove('open'); }
+document.getElementById('odOverlay').addEventListener('click', e=>{ if(e.target===document.getElementById('odOverlay')) closeOD(); });
+
+function updateStatus(id) {
+  const ns = document.getElementById('stSel').value;
+  const all = JSON.parse(localStorage.getItem('gh_orders')||'[]');
+  const idx = all.findIndex(o=>o.id===id);
+  if (idx!==-1) { all[idx].status=ns; localStorage.setItem('gh_orders', JSON.stringify(all)); }
+  orders=all; loadAll(); closeOD();
+  showNotif('✅ Status Updated',`Order #${id} → ${ns}`);
+}
+
+// PRODUCTS TABLE
+function renderProdTbl() {
+  const sm = {};
+  orders.filter(o=>o.status!=='Cancelled').forEach(o=>o.items.forEach(i=>{
+    if (!sm[i.pid]) sm[i.pid]={units:0,revenue:0};
+    sm[i.pid].units+=i.qty; sm[i.pid].revenue+=i.price*i.qty;
+  }));
+  document.getElementById('prodTbl').innerHTML = `
+    <table><thead><tr><th>Product</th><th>Variants</th><th>Price Range</th><th>Units Sold</th><th>Revenue</th></tr></thead>
+    <tbody>${PRODS.map(p=>`<tr>
+      <td>${p.emoji} <strong>${p.name}</strong></td>
+      <td>${p.weights.map(w=>w.w).join(', ')}</td>
+      <td>₹${p.weights[0].p} – ₹${p.weights[p.weights.length-1].p}</td>
+      <td>${sm[p.id]?.units||0}</td>
+      <td>₹${sm[p.id]?.revenue||0}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+// CUSTOMERS TABLE (from registered users + orders)
+function renderCustTbl() {
+  const regUsers = JSON.parse(localStorage.getItem('gh_users')||'[]');
+  const orderMap = {};
+  orders.forEach(o=>{
+    if (!orderMap[o.userId]) orderMap[o.userId]={orders:0,spent:0};
+    orderMap[o.userId].orders++;
+    if (o.status!=='Cancelled') orderMap[o.userId].spent+=o.total;
+  });
+  if (!regUsers.length) {
+    document.getElementById('custTbl').innerHTML='<div class="empty-s"><div class="ei">👥</div><p>No registered users yet</p></div>'; return;
+  }
+  document.getElementById('custTbl').innerHTML = `
+    <table><thead><tr><th>Customer</th><th>Email</th><th>Phone</th><th>Joined</th><th>Orders</th><th>Spent</th></tr></thead>
+    <tbody>${regUsers.map(u=>`<tr>
+      <td><strong>${u.name}</strong></td>
+      <td>${u.email}</td>
+      <td>${u.phone}</td>
+      <td style="font-size:0.78rem;color:var(--muted)">${new Date(u.joinedAt).toLocaleDateString('en-IN')}</td>
+      <td>${orderMap[u.id]?.orders||0}</td>
+      <td>₹${orderMap[u.id]?.spent||0}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+// ANALYTICS
+function renderAnalytics() {
+  const rev = orders.filter(o=>o.status!=='Cancelled').reduce((a,c)=>a+c.total,0);
+  const validOrders = orders.filter(o=>o.status!=='Cancelled');
+  const avg = validOrders.length ? Math.round(rev/validOrders.length) : 0;
+  const unique = new Set(orders.map(o=>o.userId||o.customer.phone)).size;
+  document.getElementById('aStats').innerHTML = `
+    <div class="sc"><div class="sci" style="background:#FEF3D7">💰</div><div class="sc-info"><div class="sv">₹${rev.toLocaleString()}</div><div class="sl">Total Revenue</div></div></div>
+    <div class="sc"><div class="sci" style="background:#E6F9EE">🧾</div><div class="sc-info"><div class="sv">₹${avg.toLocaleString()}</div><div class="sl">Avg Order</div></div></div>
+    <div class="sc"><div class="sci" style="background:#E3F2FD">👤</div><div class="sc-info"><div class="sv">${unique}</div><div class="sl">Unique Customers</div></div></div>
+    <div class="sc"><div class="sci" style="background:#F3E5F5">📦</div><div class="sc-info"><div class="sv">${orders.length}</div><div class="sl">Total Orders</div></div></div>`;
+
+  const sm = {};
+  orders.filter(o=>o.status!=='Cancelled').forEach(o=>o.items.forEach(i=>{
+    if (!sm[i.pid]) sm[i.pid]={name:i.name,emoji:i.emoji,units:0,revenue:0};
+    sm[i.pid].units+=i.qty; sm[i.pid].revenue+=i.price*i.qty;
+  }));
+  const sorted = Object.values(sm).sort((a,b)=>b.revenue-a.revenue);
+  document.getElementById('topProdTbl').innerHTML = !sorted.length
+    ? '<div class="empty-s"><div class="ei">📊</div><p>No sales data yet</p></div>'
+    : `<table><thead><tr><th>Product</th><th>Units Sold</th><th>Revenue</th></tr></thead>
+      <tbody>${sorted.map(p=>`<tr><td>${p.emoji} ${p.name}</td><td>${p.units}</td><td>₹${p.revenue.toLocaleString()}</td></tr>`).join('')}</tbody></table>`;
+}
+
+prevCount = JSON.parse(localStorage.getItem('gh_orders')||'[]').length;
+</script>
+</body>
+</html>
